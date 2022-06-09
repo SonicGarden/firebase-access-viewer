@@ -6,21 +6,19 @@ const Popup = () => {
   const count = requestCount < 100 ? requestCount.toString() : ':D';
 
   return (
-    <div style={{ margin: '4px' }}>
+    <div className='container p-2'>
       {error ? (
-        <div style={{ width: '175px' }}>Please open the DevTools...orz</div>
+        <div className='w-175px'>Please open the DevTools...orz</div>
       ) : (
         <>
-          <div
-            style={{ marginBottom: '2px', fontSize: '16px', width: '200px' }}
-          >{`Firestore access count: ${count}`}</div>
+          <div className='mb-1 w-250px text-lg'>{`Firestore access count: ${count}`}</div>
           <table>
             <thead>
               <tr>
-                <th></th>
+                <th>time</th>
                 <th>mothod</th>
                 <th>service</th>
-                <th style={{ minWidth: '400px' }}>collection or document IDs</th>
+                <th className='min-w-400px'>collection or document IDs</th>
                 <th>status</th>
               </tr>
             </thead>
@@ -31,7 +29,7 @@ const Popup = () => {
                     <th>{requestedAt}</th>
                     <th>{method}</th>
                     <th>{service}</th>
-                    <th style={{ textAlign: 'left' }}>{ids}</th>
+                    <th className='text-left'>{ids}</th>
                     <th>{status}</th>
                   </tr>
                 ))}

@@ -79,12 +79,13 @@ const requestHistory = (
 
 export const useRequestsHistory = () => {
   const [requests, setRequests] = useState<Request[]>([]);
-  const [error, setError] = useState<string | undefined>();
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleMessage = ({ msg, data }: Message) => {
       if (msg !== 'request-finished') return true;
 
+      error && setError(null);
       const reqs = requestHistory(data);
       setRequests(reqs);
       return true;
