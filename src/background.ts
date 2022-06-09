@@ -1,4 +1,4 @@
-import type { Message, MessageHandler } from './types';
+import type { Message, MessageHandler } from '@/types';
 
 const isSuccessfulRequest = ({ response: { status } }: { response: { status: number } }) =>
   Math.floor(status / 100) === 2;

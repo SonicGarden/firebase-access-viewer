@@ -1,4 +1,4 @@
-import { firebaseServices } from './utils';
+import { firebaseServices } from '@/utils';
 
 let requests: {}[] = [];
 const handleRequestFinished = (request: chrome.devtools.network.Request) => {

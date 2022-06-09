@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { firebaseServices } from '../utils';
-import type { Message } from '../types';
+import { firebaseServices } from '@/utils';
+import type { Message } from '@/types';
 
 export type Request = {
   requestedAt: string;
