@@ -1,4 +1,4 @@
-import { useRequestsHistory } from '../hooks/useRequestsHistory';
+import { useRequestsHistory } from '@/hooks/useRequestsHistory';
 
 const Popup = () => {
   const { requests, error } = useRequestsHistory();
