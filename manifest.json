@@ -3,7 +3,21 @@
   "name": "Firebase access viewer",
   "description": "Visualize network requests with the help of Devtools and prevent firebase heavy charges due to infinite loops",
   "version": "1.0",
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  },
+  "devtools_page": "devtools.html",
   "action": {
-    "default_popup": "index.html"
-  }
+    "default_icon": {
+      "19": "icon.png"
+    },
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "src/background.ts"
+  },
+  "permissions": ["storage"],
+  "host_permissions": ["<all_urls>"]
 }
