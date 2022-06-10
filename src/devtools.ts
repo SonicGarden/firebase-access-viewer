@@ -14,7 +14,6 @@ const msgGetRequestsHandler: MessageHandler = async (message, sender, sendRespon
 };
 const msgClearRequestsHandler: MessageHandler = async () => {
   requests = [];
-  chrome.runtime.sendMessage({ msg: 'request-finished', data: requests });
   return true;
 };
 

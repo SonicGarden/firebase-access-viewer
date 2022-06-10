@@ -82,15 +82,22 @@ const requestHistory = (
 export const useRequestsHistory = () => {
   const [requests, setRequests] = useState<Request[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const reset = useCallback(() => chrome.runtime.sendMessage({ msg: 'clear-requests' }), []);
-  const reload = useCallback(() => {
+  const reset = useCallback(() => {
+    chrome.runtime.sendMessage({ msg: 'clear-requests' });
+    setRequests([]);
+  }, []);
+  const fetchRequests = useCallback(() => {
     chrome.runtime.sendMessage({ msg: 'get-requests' }, (response) => {
       const reqs = requestHistory(response);
       setRequests(reqs);
     });
   }, []);
+  const reload = useCallback(() => {
+    fetchRequests();
+  }, [fetchRequests]);
 
   useEffect(() => {
+    console.log('effect');
     const handleMessage = ({ msg, data }: Message) => {
       if (msg !== 'request-finished') return true;
 
@@ -106,17 +113,14 @@ export const useRequestsHistory = () => {
         return;
       }
 
-      chrome.runtime.sendMessage({ msg: 'get-requests' }, (response) => {
-        const reqs = requestHistory(response);
-        setRequests(reqs);
-      });
+      fetchRequests();
     });
     chrome.runtime.onMessage.addListener(handleMessage);
 
     return () => {
       chrome.runtime.onMessage.removeListener(handleMessage);
     };
-  }, []);
+  }, [fetchRequests]);
 
   return { requests, error, reset, reload };
 };
