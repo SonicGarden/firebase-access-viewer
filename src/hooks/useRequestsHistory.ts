@@ -67,6 +67,14 @@ const requestHistory = (
       }[service] || '';
     const { postData } = request as FirestoreRequest;
     const { params: data } = postData || {};
+    const formattedData = data
+      ?.filter(({ name }) => name.startsWith('req'))
+      ?.map(({ value }) => {
+        const decodedValue = decodeURIComponent(JSON.stringify(value));
+        const parsedValue = JSON.parse(decodedValue.slice(1, -1));
+        return JSON.stringify(parsedValue, null, 2);
+      })
+      ?.join('\n');
 
     return {
       requestedAt: new Date(startedDateTime).toLocaleTimeString(),
@@ -74,7 +82,7 @@ const requestHistory = (
       service,
       status: response.status,
       ids,
-      data: data && decodeURIComponent(JSON.stringify(data, null, 2)),
+      data: formattedData && formattedData,
     };
   });
 };
@@ -97,7 +105,6 @@ export const useRequestsHistory = () => {
   }, [fetchRequests]);
 
   useEffect(() => {
-    console.log('effect');
     const handleMessage = ({ msg, data }: Message) => {
       if (msg !== 'request-finished') return true;
 

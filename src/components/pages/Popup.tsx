@@ -44,7 +44,7 @@ const Popup = () => {
                   <th>{requestedAt}</th>
                   <th>{method}</th>
                   <th>{service}</th>
-                  <th className={`text-left ${data ? 'cursor-pointer' : ''}`}>
+                  <th className={`text-left overflow-auto max-w-400px ${data ? 'cursor-pointer' : ''}`}>
                     <div onClick={handleClick}>{ids}</div>
                   </th>
                   <th>{status}</th>
