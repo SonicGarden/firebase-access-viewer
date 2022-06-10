@@ -15,7 +15,9 @@ const Popup = () => {
       <div className='flex mb-1'>
         <div className='flex-1 text-lg'>{`Firestore access count: ${count}`}</div>
         <div>
-          <Button onClick={reload} className='mr-1'>Reload</Button>
+          <Button onClick={reload} className='mr-1'>
+            Reload
+          </Button>
           <Button onClick={reset}>Clear</Button>
         </div>
       </div>
@@ -42,7 +44,7 @@ const Popup = () => {
                   <th>{requestedAt}</th>
                   <th>{method}</th>
                   <th>{service}</th>
-                  <th className='text-left'>
+                  <th className={`text-left ${data ? 'cursor-pointer' : ''}`}>
                     <div onClick={handleClick}>{ids}</div>
                   </th>
                   <th>{status}</th>
