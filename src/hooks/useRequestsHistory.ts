@@ -65,6 +65,8 @@ const requestHistory = (
         firestore: firestoreIds(request),
         storage: storageIds(request),
       }[service] || '';
+    const { postData } = request as FirestoreRequest;
+    const { params: data } = postData || {};
 
     return {
       requestedAt: new Date(startedDateTime).toLocaleTimeString(),
@@ -72,7 +74,7 @@ const requestHistory = (
       service,
       status: response.status,
       ids,
-      data: req,
+      data: data && decodeURIComponent(JSON.stringify(data, null, 2)),
     };
   });
 };
