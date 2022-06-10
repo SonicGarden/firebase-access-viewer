@@ -1,3 +1,5 @@
+import { Button } from '@/components/Button';
+
 export const Modal = ({
   title,
   body,
@@ -14,9 +16,7 @@ export const Modal = ({
       <div className='p-3 text-lg'>{title}</div>
       <div className='p-3'>{body}</div>
       <div className='flex flex-row-reverse p-3'>
-        <button className='p-2 bg-gray-200 border border-1 border-black border-solid rounded-md' onClick={onClickClose}>
-          Close
-        </button>
+        <Button onClick={onClickClose}>Close</Button>
       </div>
     </div>
   ) : (

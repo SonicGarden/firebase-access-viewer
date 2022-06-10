@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { firebaseServices } from '@/utils';
 import type { Message } from '@/types';
 
@@ -82,6 +82,13 @@ const requestHistory = (
 export const useRequestsHistory = () => {
   const [requests, setRequests] = useState<Request[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const reset = useCallback(() => chrome.runtime.sendMessage({ msg: 'clear-requests' }), []);
+  const reload = useCallback(() => {
+    chrome.runtime.sendMessage({ msg: 'get-requests' }, (response) => {
+      const reqs = requestHistory(response);
+      setRequests(reqs);
+    });
+  }, []);
 
   useEffect(() => {
     const handleMessage = ({ msg, data }: Message) => {
@@ -111,5 +118,5 @@ export const useRequestsHistory = () => {
     };
   }, []);
 
-  return { requests, error };
+  return { requests, error, reset, reload };
 };

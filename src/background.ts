@@ -1,4 +1,4 @@
-import type { Message, MessageHandler } from '@/types';
+import type { MessageHandler } from '@/types';
 
 const isSuccessfulRequest = ({ response: { status } }: { response: { status: number } }) =>
   Math.floor(status / 100) === 2;
@@ -38,7 +38,7 @@ const handleMessage: MessageHandler = async (message, sender, sendResponse) => {
     'devtools-ready': msgDevToolsReadyHandler,
     'is-devtools-enabled': msgIsDevToolsEnabledHandler,
   }[message.msg as string];
-  return handler?.(message, sender, sendResponse) || true;
+  return await handler?.(message, sender, sendResponse) || true;
 };
 
 chrome.runtime.onMessage.addListener(handleMessage);
