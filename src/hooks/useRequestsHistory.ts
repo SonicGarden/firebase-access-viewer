@@ -82,7 +82,7 @@ const requestHistory = (
       service,
       status: response.status,
       ids,
-      data: formattedData && formattedData,
+      data: formattedData,
     };
   });
 };
