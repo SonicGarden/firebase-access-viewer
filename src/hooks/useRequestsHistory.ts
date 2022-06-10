@@ -56,7 +56,7 @@ const requestHistory = (
     startedDateTime: string;
   }[]
 ) => {
-  return data.map((req) => {
+  return (data || []).map((req) => {
     const { request, response, startedDateTime } = req;
     const { method, url } = request;
     const service = firebaseServices.find(({ match }) => match(url))?.name || '';
@@ -66,8 +66,8 @@ const requestHistory = (
         storage: storageIds(request),
       }[service] || '';
     const { postData } = request as FirestoreRequest;
-    const { params: data } = postData || {};
-    const formattedData = data
+    const { params } = postData || {};
+    const formattedData = params
       ?.filter(({ name }) => name.startsWith('req'))
       ?.map(({ value }) => {
         const decodedValue = decodeURIComponent(JSON.stringify(value));
