@@ -21,22 +21,9 @@ const msgRequestFinishedHandler: MessageHandler = async ({ data: requests }) => 
   return true;
 };
 
-let devtoolsEnabled = false;
-const msgDevToolsReadyHandler: MessageHandler = async () => {
-  devtoolsEnabled = true;
-  return true;
-};
-
-const msgIsDevToolsEnabledHandler: MessageHandler = async (_message, _sender, sendResponse) => {
-  sendResponse(devtoolsEnabled);
-  return true;
-};
-
 const handleMessage: MessageHandler = async (message, sender, sendResponse) => {
   const handler = {
     'request-finished': msgRequestFinishedHandler,
-    'devtools-ready': msgDevToolsReadyHandler,
-    'is-devtools-enabled': msgIsDevToolsEnabledHandler,
   }[message.msg as string];
   return await handler?.(message, sender, sendResponse) || true;
 };

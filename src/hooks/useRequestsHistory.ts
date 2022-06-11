@@ -89,16 +89,23 @@ const requestHistory = (
 
 export const useRequestsHistory = () => {
   const [requests, setRequests] = useState<Request[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const reset = useCallback(() => {
-    chrome.runtime.sendMessage({ msg: 'clear-requests' });
-    setRequests([]);
+    try {
+      chrome.runtime.sendMessage({ msg: 'clear-requests' });
+      setRequests([]);
+    } catch (e) {
+      console.log(e);
+    }
   }, []);
   const fetchRequests = useCallback(() => {
-    chrome.runtime.sendMessage({ msg: 'get-requests' }, (response) => {
-      const reqs = requestHistory(response);
-      setRequests(reqs);
-    });
+    try {
+      chrome.runtime.sendMessage({ msg: 'get-requests' }, (response) => {
+        const reqs = requestHistory(response);
+        setRequests(reqs);
+      });
+    } catch (e) {
+      console.log(e);
+    }
   }, []);
   const reload = useCallback(() => {
     fetchRequests();
@@ -108,20 +115,12 @@ export const useRequestsHistory = () => {
     const handleMessage = ({ msg, data }: Message) => {
       if (msg !== 'request-finished') return true;
 
-      error && setError(null);
       const reqs = requestHistory(data);
       setRequests(reqs);
       return true;
     };
 
-    chrome.runtime.sendMessage({ msg: 'is-devtools-enabled' }, (response) => {
-      if (!response) {
-        setError('DevTools is disabled');
-        return;
-      }
-
-      fetchRequests();
-    });
+    fetchRequests();
     chrome.runtime.onMessage.addListener(handleMessage);
 
     return () => {
@@ -129,5 +128,5 @@ export const useRequestsHistory = () => {
     };
   }, [fetchRequests]);
 
-  return { requests, error, reset, reload };
+  return { requests, reset, reload };
 };
