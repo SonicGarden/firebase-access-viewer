@@ -19,11 +19,5 @@
     "service_worker": "src/background.ts"
   },
   "permissions": ["storage"],
-  "host_permissions": ["<all_urls>"],
-  "content_scripts": [
-    {
-      "js": ["src/content.tsx"],
-      "matches": ["*://*/*"]
-    }
-  ]
+  "host_permissions": ["<all_urls>"]
 }
