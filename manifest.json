@@ -22,6 +22,5 @@
   "background": {
     "service_worker": "src/background.ts"
   },
-  "permissions": ["storage"],
   "host_permissions": ["<all_urls>"]
 }
