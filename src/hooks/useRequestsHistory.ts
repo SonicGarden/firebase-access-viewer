@@ -7,7 +7,7 @@ export type Request = {
   method: string;
   service: string;
   status: number;
-  ids: string;
+  paths: string;
   data: any;
 };
 
@@ -22,7 +22,7 @@ type StorageRequest = {
   url: string;
 };
 
-const firestoreIds = (request: FirestoreRequest) => {
+const firestorePaths = (request: FirestoreRequest) => {
   const { postData } = request;
   return (postData?.params || [])
     .filter(({ name }) => name.startsWith('req'))
@@ -31,19 +31,20 @@ const firestoreIds = (request: FirestoreRequest) => {
       const parsedValue = JSON.parse(decodedValue);
       const { addTarget } = parsedValue;
       const { query, documents } = addTarget || {};
-      const { structuredQuery } = query || {};
+      const { structuredQuery, parent } = query || {};
       const { from } = structuredQuery || {};
-      const collectionId = from && from[0].collectionId;
+      const parentPath = parent && parent.split('/documents/')[1];
+      const collectionPath = from && (parentPath ? `${parentPath}/${from[0].collectionId}` : from[0].collectionId);
       const { documents: [document] = [] } = documents || {};
-      const documentId = document && document.split('/documents/')[1];
+      const documentPath = document && document.split('/documents/')[1];
 
-      return collectionId || documentId;
+      return collectionPath || documentPath;
     })
     .filter((_) => _)
     .join(', ');
 };
 
-const storageIds = (request: StorageRequest) => {
+const storagePaths = (request: StorageRequest) => {
   const { url } = request;
   const { pathname } = new URL(decodeURIComponent(url));
   return pathname.split('/o/')[1];
@@ -60,10 +61,10 @@ const requestHistory = (
     const { request, response, startedDateTime } = req;
     const { method, url } = request;
     const service = firebaseServices.find(({ match }) => match(url))?.name || '';
-    const ids =
+    const paths =
       {
-        firestore: firestoreIds(request),
-        storage: storageIds(request),
+        firestore: firestorePaths(request),
+        storage: storagePaths(request),
       }[service] || '';
     const { postData } = request as FirestoreRequest;
     const { params } = postData || {};
@@ -74,15 +75,15 @@ const requestHistory = (
         const parsedValue = JSON.parse(decodedValue.slice(1, -1));
         return JSON.stringify(parsedValue, null, 2);
       })
-      ?.join('\n');
+      ?.join(',\n');
 
     return {
       requestedAt: new Date(startedDateTime).toLocaleTimeString(),
       method,
       service,
       status: response.status,
-      ids,
-      data: formattedData,
+      paths,
+      data: formattedData && `[${formattedData}]`,
     };
   });
 };

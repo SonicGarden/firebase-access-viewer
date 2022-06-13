@@ -27,13 +27,13 @@ const Popup = () => {
             <th>time</th>
             <th>mothod</th>
             <th>service</th>
-            <th className='min-w-400px'>collection or document IDs</th>
+            <th className='min-w-400px'>collection or document paths</th>
             <th>status</th>
           </tr>
         </thead>
         <tbody>
           {requests &&
-            requests.map(({ requestedAt, method, service, status, ids, data }, index) => {
+            requests.map(({ requestedAt, method, service, status, paths, data }, index) => {
               const handleClick = () => {
                 setModalData(data);
                 setShowsModal(true);
@@ -45,7 +45,7 @@ const Popup = () => {
                   <th>{method}</th>
                   <th>{service}</th>
                   <th className={`text-left overflow-auto max-w-400px ${data ? 'cursor-pointer' : ''}`}>
-                    <div onClick={handleClick}>{ids}</div>
+                    <div onClick={handleClick}>{paths}</div>
                   </th>
                   <th>{status}</th>
                 </tr>
