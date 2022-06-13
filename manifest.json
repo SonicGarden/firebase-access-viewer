@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Firebase access viewer",
-  "description": "Visualize network requests with the help of Devtools and prevent firebase heavy charges due to infinite loops",
+  "description": "Visualize network requests to firebase services",
   "version": "1.0",
   "icons": {
     "16": "icon16.png",
