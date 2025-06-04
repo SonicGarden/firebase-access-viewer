@@ -1,4 +1,5 @@
 import { Button } from '@/components/Button';
+import type { ReactNode } from 'react';
 
 export const Modal = ({
   title,
@@ -7,7 +8,7 @@ export const Modal = ({
   onClickClose,
 }: {
   title: string;
-  body: any;
+  body: ReactNode;
   show: boolean;
   onClickClose: () => void;
 }) => {

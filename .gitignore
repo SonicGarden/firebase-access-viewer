@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 
 firebase-access-viewer.zip
+
+# claude-code
+.claude/

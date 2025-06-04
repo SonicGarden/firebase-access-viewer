@@ -1,9 +1,11 @@
+import type { ReactNode } from 'react';
+
 export const Button = ({
   children,
   onClick,
   className,
 }: {
-  children: any;
+  children: ReactNode;
   onClick?: () => void;
   className?: string;
 }) => {
