@@ -1,6 +1,7 @@
+import { memo, useCallback} from 'react';
 import type { ReactNode } from 'react';
 
-export const Button = ({
+export const Button = memo(({
   children,
   onClick,
   className,
@@ -9,9 +10,9 @@ export const Button = ({
   onClick?: () => void;
   className?: string;
 }) => {
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     onClick?.();
-  };
+  }, [onClick]);
 
   return (
     <button
@@ -21,4 +22,4 @@ export const Button = ({
       {children}
     </button>
   );
-};
+});

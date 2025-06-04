@@ -1,7 +1,8 @@
+import { memo } from 'react';
 import { Button } from '@/components/Button';
 import type { ReactNode } from 'react';
 
-export const Modal = ({
+export const Modal = memo(({
   title,
   body,
   show,
@@ -20,7 +21,5 @@ export const Modal = ({
         <Button onClick={onClickClose}>Close</Button>
       </div>
     </div>
-  ) : (
-    <></>
-  );
-};
+  ) : null;
+});
