@@ -2,13 +2,15 @@ import { useState, useEffect, useCallback } from 'react';
 import { firebaseServices } from '@/utils';
 import type { Message } from '@/types';
 
+export type ModalData = string | null;
+
 export type Request = {
   requestedAt: string;
   method: string;
   service: string;
   status: number;
   paths: string;
-  data: any;
+  data: ModalData;
 };
 
 type FirestoreRequest = {
@@ -83,7 +85,7 @@ const requestHistory = (
       service,
       status: response.status,
       paths,
-      data: formattedData && `[${formattedData}]`,
+      data: formattedData ? `[${formattedData}]` : null,
     };
   });
 };
@@ -121,8 +123,8 @@ export const useRequestsHistory = () => {
       return true;
     };
 
-    fetchRequests();
     chrome.runtime.onMessage.addListener(handleMessage);
+    fetchRequests();
 
     return () => {
       chrome.runtime.onMessage.removeListener(handleMessage);

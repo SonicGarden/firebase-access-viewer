@@ -1,22 +1,25 @@
-export const Button = ({
+import { memo, useCallback} from 'react';
+import type { ReactNode } from 'react';
+
+export const Button = memo(({
   children,
   onClick,
   className,
 }: {
-  children: any;
+  children: ReactNode;
   onClick?: () => void;
   className?: string;
 }) => {
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     onClick?.();
-  };
+  }, [onClick]);
 
   return (
     <button
-      className={`p-1 bg-gray-200 border border-1 border-black border-solid rounded-md ${className || ''}`}
+      className={`p-1 bg-gray-200 border border-black border-solid rounded-md ${className || ''}`}
       onClick={handleClick}
     >
       {children}
     </button>
   );
-};
+});

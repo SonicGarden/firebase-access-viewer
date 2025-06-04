@@ -1,14 +1,42 @@
-import { useState } from 'react';
+import { useState, useMemo, useCallback, memo } from 'react';
 import { useRequestsHistory } from '@/hooks/useRequestsHistory';
 import { Modal } from '@/components/Modal';
 import { Button } from '@/components/Button';
+import type { Request, ModalData } from '@/hooks/useRequestsHistory';
+
+const RequestRow = memo(({ request, onDataClick }: { request: Request; onDataClick: (data: ModalData) => void }) => {
+  const handleClick = useCallback(() => {
+    if (request.data) {
+      onDataClick(request.data);
+    }
+  }, [request.data, onDataClick]);
+
+  return (
+    <tr>
+      <th>{request.requestedAt}</th>
+      <th>{request.method}</th>
+      <th>{request.service}</th>
+      <th className={`text-left overflow-auto max-w-md ${request.data ? 'cursor-pointer' : ''}`}>
+        <div onClick={handleClick}>{request.paths}</div>
+      </th>
+      <th>{request.status}</th>
+    </tr>
+  );
+});
 
 const Popup = () => {
   const [showsModal, setShowsModal] = useState(false);
-  const [modalData, setModalData] = useState();
+  const [modalData, setModalData] = useState<ModalData>(null);
   const { requests, reset, reload } = useRequestsHistory();
-  const requestCount = (requests || []).length;
-  const count = requestCount < 100 ? requestCount.toString() : ':D';
+  const requestCount = useMemo(() => (requests || []).length, [requests]);
+  const count = useMemo(() => (requestCount < 100 ? requestCount.toString() : ':D'), [requestCount]);
+  const handleDataClick = useCallback((data: ModalData) => {
+    setModalData(data);
+    setShowsModal(true);
+  }, []);
+  const handleCloseModal = useCallback(() => {
+    setShowsModal(false);
+  }, []);
 
   return (
     <div className='container relative p-2'>
@@ -25,37 +53,19 @@ const Popup = () => {
         <thead>
           <tr>
             <th>time</th>
-            <th>mothod</th>
+            <th>method</th>
             <th>service</th>
-            <th className='min-w-400px'>collection or document paths</th>
+            <th className='min-w-[400px]'>collection or document paths</th>
             <th>status</th>
           </tr>
         </thead>
         <tbody>
-          {requests &&
-            requests.map(({ requestedAt, method, service, status, paths, data }, index) => {
-              const handleClick = () => {
-                setModalData(data);
-                setShowsModal(true);
-              };
-
-              return (
-                <tr key={index}>
-                  <th>{requestedAt}</th>
-                  <th>{method}</th>
-                  <th>{service}</th>
-                  <th className={`text-left overflow-auto max-w-400px ${data ? 'cursor-pointer' : ''}`}>
-                    <div onClick={handleClick}>{paths}</div>
-                  </th>
-                  <th>{status}</th>
-                </tr>
-              );
-            })}
+          {requests?.map((request, index) => (
+            <RequestRow key={index} request={request} onDataClick={handleDataClick} />
+          ))}
         </tbody>
       </table>
-      {showsModal && (
-        <Modal title='Query details' body={modalData} show={showsModal} onClickClose={() => setShowsModal(false)} />
-      )}
+      {showsModal && <Modal title='Query details' body={modalData} show={showsModal} onClickClose={handleCloseModal} />}
     </div>
   );
 };
