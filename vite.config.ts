@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { crx } from '@crxjs/vite-plugin';
-import WindiCSS from 'vite-plugin-windicss';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import { resolve } from 'path';
 import manifest from './manifest.json';
@@ -15,5 +14,5 @@ export default defineConfig({
       },
     },
   },
-  plugins: [react(), crx({ manifest }), WindiCSS(), tsconfigPaths()],
+  plugins: [react(), crx({ manifest }), tsconfigPaths()],
 });

@@ -16,7 +16,7 @@ const RequestRow = memo(({ request, onDataClick }: { request: Request; onDataCli
       <th>{request.requestedAt}</th>
       <th>{request.method}</th>
       <th>{request.service}</th>
-      <th className={`text-left overflow-auto max-w-400px ${request.data ? 'cursor-pointer' : ''}`}>
+      <th className={`text-left overflow-auto max-w-md ${request.data ? 'cursor-pointer' : ''}`}>
         <div onClick={handleClick}>{request.paths}</div>
       </th>
       <th>{request.status}</th>
@@ -55,7 +55,7 @@ const Popup = () => {
             <th>time</th>
             <th>method</th>
             <th>service</th>
-            <th className='min-w-400px'>collection or document paths</th>
+            <th className='min-w-[400px]'>collection or document paths</th>
             <th>status</th>
           </tr>
         </thead>

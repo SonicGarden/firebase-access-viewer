@@ -16,7 +16,7 @@ export const Button = memo(({
 
   return (
     <button
-      className={`p-1 bg-gray-200 border border-1 border-black border-solid rounded-md ${className || ''}`}
+      className={`p-1 bg-gray-200 border border-black border-solid rounded-md ${className || ''}`}
       onClick={handleClick}
     >
       {children}
