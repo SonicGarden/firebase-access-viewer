@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "zip": "yarn build && zip -r releases/firebase-access-viewer.zip dist"
   },
   "dependencies": {
     "react": "^19.1.0",
