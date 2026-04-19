@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "zip": "yarn build && zip -r releases/firebase-access-viewer.zip dist",
+    "zip": "pnpm build && zip -r releases/firebase-access-viewer.zip dist",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -28,5 +28,11 @@
     "vite": "^6.3.5",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^4.0.18"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }
