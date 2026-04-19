@@ -1,7 +1,7 @@
-import { memo, useCallback} from 'react';
+import clsx from 'clsx';
 import type { ReactNode } from 'react';
 
-export const Button = memo(({
+export const Button = ({
   children,
   onClick,
   className,
@@ -10,16 +10,12 @@ export const Button = memo(({
   onClick?: () => void;
   className?: string;
 }) => {
-  const handleClick = useCallback(() => {
-    onClick?.();
-  }, [onClick]);
-
   return (
     <button
-      className={`p-1 bg-gray-200 border border-black border-solid rounded-md ${className || ''}`}
-      onClick={handleClick}
+      className={clsx('p-1 bg-gray-200 border border-black border-solid rounded-md', className)}
+      onClick={onClick}
     >
       {children}
     </button>
   );
-});
+};

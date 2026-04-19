@@ -15,14 +15,14 @@ export type Request = {
 
 export const useRequestsHistory = () => {
   const [requests, setRequests] = useState<Request[]>([]);
-  const reset = useCallback(() => {
+  const reset = () => {
     try {
       chrome.runtime.sendMessage({ msg: 'clear-requests' });
       setRequests([]);
     } catch (e) {
       console.log(e);
     }
-  }, []);
+  };
   const fetchRequests = useCallback(() => {
     try {
       chrome.runtime.sendMessage({ msg: 'get-requests' }, (response) => {
@@ -33,9 +33,9 @@ export const useRequestsHistory = () => {
       console.log(e);
     }
   }, []);
-  const reload = useCallback(() => {
+  const reload = () => {
     fetchRequests();
-  }, [fetchRequests]);
+  };
 
   useEffect(() => {
     const handleMessage = ({ msg, data }: Message) => {
