@@ -3,6 +3,7 @@ reviewer: ask-peer
 review_iterations: 3
 check_commands:
   - pnpm tsc --noEmit
+  - pnpm tsc -p tsconfig.node.json --noEmit
 test_commands:
   - Skill(run-tests)
 self_retrospective:

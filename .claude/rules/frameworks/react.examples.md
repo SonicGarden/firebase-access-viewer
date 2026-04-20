@@ -46,6 +46,25 @@ const handleClick = useCallback(() => setOpen(true), []);
 return <button onClick={handleClick}>Open</button>; // buttonはmemoではない
 ```
 
+**Good: React Compiler有効下の新規コードは素のまま書く（Compilerが自動メモ化）**
+```tsx
+const Popup = () => {
+  const { requests, reset, reload } = useRequestsHistory();
+  const handleDataClick = (data: ModalData) => {
+    setModalData(data);
+    setShowsModal(true);
+  };
+  // `useCallback` を巻かなくてもCompilerが必要に応じてメモ化する
+  return <RequestRow onDataClick={handleDataClick} />;
+};
+```
+
+**Bad: Compiler導入を理由に既存の`memo` / `useCallback`を機械的に剥がす**
+```tsx
+// 既存コードはそのまま保持する。剥がす場合は別タスクで個別判断
+const RequestRow = ({ request, onDataClick }: { /* ... */ }) => { /* ... */ };
+```
+
 ### Props型はシンプルならインライン、複雑なら切り出す
 
 **Good: シンプルなpropsはインライン**
@@ -150,3 +169,22 @@ const Popup = () => {
   );
 };
 ```
+
+### `babel({ presets: [reactCompilerPreset()] })`
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite';
+import react, { reactCompilerPreset } from '@vitejs/plugin-react';
+import babel from '@rolldown/plugin-babel';
+import { crx } from '@crxjs/vite-plugin';
+import manifest from './manifest.json';
+
+export default defineConfig({
+  resolve: { tsconfigPaths: true },
+  plugins: [react(), babel({ presets: [reactCompilerPreset()] }), crx({ manifest })],
+});
+```
+- `@vitejs/plugin-react@6.x` は oxc/rolldown ベースで Babel 統合を持たないため、`@rolldown/plugin-babel` を別プラグインとして追加し、そこに `reactCompilerPreset()` を渡す
+- `react()` と `babel()` は独立したプラグインとして `plugins` 配列に並べる
+- React 19 では `react-compiler-runtime` が組込まれるため追加の依存は不要（React 17/18 を対象にする場合のみ `reactCompilerPreset({ target: '17' })` 等を指定）
+- `devDependencies` に `babel-plugin-react-compiler` / `@rolldown/plugin-babel` を追加（`@rolldown/plugin-babel` は `@vitejs/plugin-react@6.x` の peer dependency 扱い）
