@@ -9,7 +9,7 @@ const showBadge = async (requests: { response: { status: number } }[]) => {
   const text = requests.length < 100 ? requests.length.toString() : ':D';
   await chrome.action.setBadgeBackgroundColor({ color });
   await chrome.action.setBadgeText({ text });
-  await sleep(150);
+  await sleep(100);
   await chrome.action.setBadgeText({ text: '' });
 };
 
