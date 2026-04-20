@@ -1,11 +1,11 @@
-import { useState, useCallback, memo } from 'react';
+import { useState } from 'react';
 import clsx from 'clsx';
 import { useRequestsHistory } from '@/hooks/useRequestsHistory';
 import { Modal } from '@/components/Modal';
 import { Button } from '@/components/Button';
 import type { Request, ModalData } from '@/hooks/useRequestsHistory';
 
-const RequestRow = memo(({ request, onDataClick }: { request: Request; onDataClick: (data: ModalData) => void }) => {
+const RequestRow = ({ request, onDataClick }: { request: Request; onDataClick: (data: ModalData) => void }) => {
   const handleClick = () => {
     if (request.data) {
       onDataClick(request.data);
@@ -23,7 +23,7 @@ const RequestRow = memo(({ request, onDataClick }: { request: Request; onDataCli
       <th>{request.status}</th>
     </tr>
   );
-});
+};
 
 const Popup = () => {
   const [showsModal, setShowsModal] = useState(false);
@@ -31,10 +31,10 @@ const Popup = () => {
   const { requests, reset, reload } = useRequestsHistory();
   const requestCount = (requests || []).length;
   const count = requestCount < 100 ? requestCount.toString() : ':D';
-  const handleDataClick = useCallback((data: ModalData) => {
+  const handleDataClick = (data: ModalData) => {
     setModalData(data);
     setShowsModal(true);
-  }, []);
+  };
   const handleCloseModal = () => {
     setShowsModal(false);
   };

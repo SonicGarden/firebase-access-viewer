@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { requestHistory } from '@/utils/requestHistory';
 import type { Message } from '@/types';
 
@@ -23,7 +23,7 @@ export const useRequestsHistory = () => {
       console.log(e);
     }
   };
-  const fetchRequests = useCallback(() => {
+  const fetchRequests = () => {
     try {
       chrome.runtime.sendMessage({ msg: 'get-requests' }, (response) => {
         const reqs = requestHistory(response);
@@ -32,7 +32,7 @@ export const useRequestsHistory = () => {
     } catch (e) {
       console.log(e);
     }
-  }, []);
+  };
   const reload = () => {
     fetchRequests();
   };

@@ -7,7 +7,7 @@ check_commands:
 test_commands:
   - Skill(run-tests)
 self_retrospective:
-  feedback: "./claude/retrospectives"
+  feedback: "./.claude/retrospectives"
 ---
 
 # Dev Workflow Settings
