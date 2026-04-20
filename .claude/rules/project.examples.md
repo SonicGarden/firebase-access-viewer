@@ -122,3 +122,30 @@ const paths =
 pnpm install
 # Warning: Ignored build scripts: esbuild
 ```
+
+### pnpmの`minimumReleaseAge: 10080`（7日）を`pnpm-workspace.yaml`に設定
+**Good:**
+```yaml
+# pnpm-workspace.yaml
+minimumReleaseAge: 10080
+```
+**Bad:**
+```yaml
+# 設定なし（公開直後の malicious バージョンを install してしまう可能性）
+# pnpm-workspace.yaml が存在しない、または minimumReleaseAge なし
+```
+
+### 依存更新の作業ログ・報告書はリポジトリにコミットしない
+**Good:**
+```sh
+# 報告書はローカル作業ログとして保持するがコミットはしない
+# （.claude/plans/ と同様の扱い、必要なら .gitignore で docs/dependency-update-*.md を除外）
+git add package.json pnpm-lock.yaml pnpm-workspace.yaml
+git commit -m "pnpmのminimumReleaseAgeを7日に設定（セキュリティ対策）"
+```
+**Bad:**
+```sh
+# 作業ログを本体コミットに同梱（レビューノイズが増え、履歴の意味も薄まる）
+git add docs/dependency-update-2026-04-20.md package.json pnpm-lock.yaml
+git commit -m "依存更新"
+```

@@ -15,7 +15,9 @@ Firebase(Firestore/Storage)へのネットワークリクエストをChrome DevT
 - Node版は`.node-version`で固定（プロジェクト標準）
 - パッケージマネージャはpnpm v10（`package.json`の`packageManager`フィールドで版数pin、`yarn`/`npm`は使わない）
 - pnpm v10はpostinstallスクリプトがデフォルト無効のため、必要な依存は`pnpm.onlyBuiltDependencies`に列挙して許可（例: `esbuild`）
+- pnpmの`minimumReleaseAge: 10080`（7日）を`pnpm-workspace.yaml`に設定（サプライチェーン攻撃対策として、公開直後のパッケージは自動的に導入しない）
 - `.claude/`配下のうち `.gitignore` 対象は `*.local.md` / `plans/` / `settings.local.json` のみ。ルール本体（`rules/**/*.md`）・ワークフロー設定（`dev-workflow.md`, `settings.json`）・共有スキル（`skills/`）は追跡してチームで共有する
+- 依存更新の作業ログ・報告書（`docs/dependency-update-*.md` 等）はリポジトリにコミットしない（ローカル参照専用、`.claude/plans/` と同じ扱い）
 
 ## Principles
 
