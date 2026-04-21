@@ -170,6 +170,121 @@ const Popup = () => {
 };
 ```
 
+### `usePrefersDark() => boolean`
+```ts
+// src/hooks/usePrefersDark.ts
+import { useEffect, useState } from 'react';
+
+const QUERY = '(prefers-color-scheme: dark)';
+
+export const usePrefersDark = () => {
+  const [isDark, setIsDark] = useState(() => window.matchMedia(QUERY).matches);
+
+  useEffect(() => {
+    const mql = window.matchMedia(QUERY);
+    // init時点とeffectマウント時点で値がズレうる（StrictModeの二重mount等）ため再読込
+    setIsDark(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setIsDark(e.matches);
+    mql.addEventListener('change', handler);
+    return () => {
+      mql.removeEventListener('change', handler);
+    };
+  }, []);
+
+  return isDark;
+};
+```
+- `useState` のinitializerで初期値を取るが、effect内で `mql.matches` を再読込して race を避ける
+- Chrome extension popup は寿命が短いためrootへliftするほどの効果はなく、利用箇所（`JsonView`）から直接呼んでよい
+
+### `ExpandableRow`
+```tsx
+// src/components/ExpandableRow.tsx — 展開可能行の共有leaf
+type ExpandableRowProps = {
+  expanded: boolean;
+  onToggle: () => void;   // ← id/path bind は呼び出し側
+  header: ReactNode;
+  body?: ReactNode;
+  disabled?: boolean;
+  headerClassName?: string;
+};
+
+export const ExpandableRow = ({ expanded, onToggle, header, body, disabled, headerClassName }: ExpandableRowProps) => {
+  const interactive = !disabled;
+  // role='button' / tabIndex / aria-expanded / Enter|Space keydown を付与
+  // ...
+};
+
+// 呼び出し側（TimelineView）で id をbindして渡す
+<ExpandableRow
+  expanded={expandedIds.has(request.id)}
+  onToggle={() => onToggle(request.id)}
+  header={<RequestHeaderCells request={request} />}
+  body={<JsonView data={request.rawQueries} />}
+/>
+
+// 呼び出し側（GroupedView）で path をbindして渡す
+<ExpandableRow
+  expanded={expandedPaths.has(group.path)}
+  onToggle={() => onTogglePath(group.path)}
+  header={<GroupHeaderCells group={group} />}
+  body={<NestedRequestList requests={group.requests} />}
+/>
+```
+- `onToggle: () => void` に統一することで leaf を id / path の意味論から decouple
+- `RequestRow` / `GroupRow` どちらの container も同じ leaf を再利用できる
+
+### `JsonView`
+```tsx
+// src/components/JsonView.tsx
+import { JsonView as LiteJsonView, defaultStyles, darkStyles } from 'react-json-view-lite';
+import 'react-json-view-lite/dist/index.css'; // ← 必須
+import { usePrefersDark } from '@/hooks/usePrefersDark';
+
+// モジュールトップレベルで定義 → 再レンダリングで参照が変わらない
+const expandTopLevel = (level: number) => level < 1;
+
+export const JsonView = ({ data }: { data: unknown }) => {
+  const isDark = usePrefersDark();
+  return (
+    <LiteJsonView
+      data={data as object}
+      style={isDark ? darkStyles : defaultStyles}
+      shouldExpandNode={expandTopLevel}
+    />
+  );
+};
+```
+- CSS を import しないと崩れる（README 指定）
+- `shouldExpandNode` をコンポーネント内で `(level) => level < 1` と書くと毎レンダで新しい参照になりライブラリ側の再展開挙動に影響し得る
+- dark切替は `prefers-color-scheme` media query 経由（Tailwind の `darkMode: 'media'` と揃える）
+
+### 展開state分離: `expandedRequestIds` / `expandedPaths`
+**Good:**
+```tsx
+const [expandedRequestIds, setExpandedRequestIds] = useState<Set<string>>(new Set());
+const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
+
+const toggleRequest = (id: string) => setExpandedRequestIds((prev) => toggleInSet(prev, id));
+const togglePath = (path: string) => setExpandedPaths((prev) => toggleInSet(prev, path));
+
+const reset = () => {
+  setExpandedRequestIds(new Set());
+  setExpandedPaths(new Set());
+  resetRequests();
+};
+```
+**Bad:**
+```tsx
+// 単一Setにprefix namespaceすると groupKey() ヘルパーが必要になり、片方だけクリアする操作がしづらい
+const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+const groupKey = (kind: 'req' | 'path', value: string) => `${kind}:${value}`;
+// ...
+setExpandedIds((prev) => toggleInSet(prev, groupKey('req', id)));
+```
+- requests と paths では semantic が異なり、`reset` 時に両方独立にクリアできるほうが素直
+- TypeScript 側で id / path の型を混同しないためにも分離が明確
+
 ### `babel({ presets: [reactCompilerPreset()] })`
 ```ts
 // vite.config.ts

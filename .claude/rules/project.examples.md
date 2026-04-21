@@ -35,6 +35,110 @@ const handleMessage: MessageHandler = async (message, sender, sendResponse) => {
 };
 ```
 
+### Firebaseサービス名のunion型は`firebaseServices` (`as const`)から派生させる
+**Good:**
+```ts
+// src/utils/index.ts
+export const firebaseServices = [
+  { name: 'firestore', match: (url: string) => url.match(/firestore/) },
+  { name: 'storage', match: (url: string) => url.match(/firebasestorage/) },
+] as const;
+
+export type FirebaseServiceName = (typeof firebaseServices)[number]['name'];
+// → 'firestore' | 'storage'
+
+// キー必須性が自動追従（新service追加忘れをコンパイルエラーにできる）
+const TONE_BY_SERVICE: Record<FirebaseServiceName, string> = {
+  firestore: 'bg-orange-100 ...',
+  storage: 'bg-sky-100 ...',
+};
+```
+**Bad:**
+```ts
+// stringly-typed: service名を手書きで各所に散らばらせる
+export type Request = { service: 'firestore' | 'storage' | ''; /* ... */ };
+if (service === 'firestor') { /* typo が通る */ }
+```
+
+### 外部由来データのパースはbest-effort方針
+**Good:**
+```ts
+// param 単位でskip、1件壊れても他は生きる
+const parseFirestoreReqParams = (request: FirestoreRequest): unknown[] => {
+  const params = request.postData?.params || [];
+  return params
+    .filter(({ name }) => name.startsWith('req'))
+    .map(({ value }): unknown => {
+      try {
+        return JSON.parse(decodeURIComponent(value));
+      } catch (e) {
+        console.warn('[firebase-access-viewer] failed to parse request value', e);
+        return null;
+      }
+    })
+    .filter((v): v is object => v !== null);
+};
+
+// 深いnarrowは typeof ガード + 外側 try/catch
+const pathFromParsedQuery = (parsedValue: unknown): string | undefined => {
+  try {
+    const { parent } = (query as { parent?: unknown }) ?? {};
+    const parentStr = typeof parent === 'string' ? parent : undefined;
+    // ...
+    return collectionPath || documentPath;
+  } catch {
+    return undefined;
+  }
+};
+```
+**Bad:**
+```ts
+// 1件の decodeURIComponent/JSON.parse エラーで requestHistory() 全体が throw し Popup が白画面になる
+const parsed = params.map(({ value }) => JSON.parse(decodeURIComponent(value)));
+
+// unknown を as でキャストして型は通るが実行時に undefined.split 等で落ちる
+const parent = (parsedValue as any).addTarget.query.parent as string;
+const parentPath = parent.split('/documents/')[1];
+```
+
+### Dark mode は Tailwind `darkMode: 'media'` + `usePrefersDark`
+**Good:**
+```js
+// tailwind.config.js — OS の prefers-color-scheme と連動
+export default {
+  darkMode: 'media',
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}', './devtools.html', './popup.html'],
+  // ...
+};
+```
+```tsx
+// 利用側は dark: variant を併記
+<div className='text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800/50'>
+
+// JSライブラリは usePrefersDark で state 同期
+const isDark = usePrefersDark();
+<LiteJsonView style={isDark ? darkStyles : defaultStyles} data={data} />
+```
+**Bad:**
+```js
+// class 戦略 → ルート要素に dark クラスをつける JS が必要になる
+export default { darkMode: 'class', /* ... */ };
+```
+
+### 独自CSSを要求するライブラリは利用コンポーネント冒頭でimport
+**Good:**
+```tsx
+// src/components/JsonView.tsx
+import { JsonView as LiteJsonView, defaultStyles, darkStyles } from 'react-json-view-lite';
+import 'react-json-view-lite/dist/index.css'; // ← README 指定、忘れるとスタイル崩れ
+import { usePrefersDark } from '@/hooks/usePrefersDark';
+```
+**Bad:**
+```tsx
+// import 忘れ → 実行時に崩れるがビルドは通るので気付きにくい
+import { JsonView as LiteJsonView } from 'react-json-view-lite';
+```
+
 ### Firebaseサービス判定は`firebaseServices`配列経由
 **Good:**
 ```ts
