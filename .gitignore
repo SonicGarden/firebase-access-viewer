@@ -26,6 +26,6 @@ dist-ssr
 releases/
 
 # claude-code
-.claude/settings.local.json
-.claude/*.local.md
-.claude/plans/
+.claude/*.local.*
+.claude/plans/archive/
+.claude/retrospectives/
