@@ -1,11 +1,11 @@
 import type { MessageHandler } from '@/types';
-import { isSuccessfulRequest } from '@/utils';
+import { isSuccessfulStatus } from '@/utils';
 
 const sleep = async (msec: number) => new Promise((resolve) => setTimeout(resolve, msec));
 
 const showBadge = async (requests: { response: { status: number } }[]) => {
   const [request] = requests;
-  const color = isSuccessfulRequest(request) ? '#00ff00' : '#ff0000';
+  const color = isSuccessfulStatus(request.response.status) ? '#00ff00' : '#ff0000';
   const text = requests.length < 100 ? requests.length.toString() : ':D';
   await chrome.action.setBadgeBackgroundColor({ color });
   await chrome.action.setBadgeText({ text });

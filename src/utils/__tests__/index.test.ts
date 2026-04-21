@@ -1,5 +1,5 @@
 /// <reference types="vitest/globals" />
-import { firebaseServices, isSuccessfulRequest } from '@/utils';
+import { firebaseServices, isSuccessfulStatus } from '@/utils';
 
 describe('firebaseServices', () => {
   it('Firestore URLにマッチする', () => {
@@ -28,12 +28,12 @@ describe('firebaseServices', () => {
   });
 });
 
-describe('isSuccessfulRequest', () => {
+describe('isSuccessfulStatus', () => {
   it.each([200, 201, 204, 299])('ステータス%iでtrueを返す', (status) => {
-    expect(isSuccessfulRequest({ response: { status } })).toBe(true);
+    expect(isSuccessfulStatus(status)).toBe(true);
   });
 
   it.each([100, 301, 400, 404, 500, 503])('ステータス%iでfalseを返す', (status) => {
-    expect(isSuccessfulRequest({ response: { status } })).toBe(false);
+    expect(isSuccessfulStatus(status)).toBe(false);
   });
 });
