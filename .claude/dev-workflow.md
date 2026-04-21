@@ -1,6 +1,8 @@
 ---
 reviewer: ask-peer
 review_iterations: 3
+custom_instructions: |
+  Always use TDD. Write tests before implementation.
 check_commands:
   - pnpm tsc --noEmit
   - pnpm tsc -p tsconfig.node.json --noEmit
