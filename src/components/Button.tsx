@@ -12,7 +12,11 @@ export const Button = ({
 }) => {
   return (
     <button
-      className={clsx('p-1 bg-gray-200 border border-black border-solid rounded-md', className)}
+      className={clsx(
+        'p-1 bg-gray-200 border border-black border-solid rounded-md text-gray-900',
+        'dark:bg-gray-700 dark:border-gray-500 dark:text-gray-100',
+        className
+      )}
       onClick={onClick}
     >
       {children}

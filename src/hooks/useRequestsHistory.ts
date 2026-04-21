@@ -1,17 +1,9 @@
 import { useState, useEffect } from 'react';
 import { requestHistory } from '@/utils/requestHistory';
 import type { Message } from '@/types';
+import type { Request } from '@/utils/requestHistory';
 
-export type ModalData = string | null;
-
-export type Request = {
-  requestedAt: string;
-  method: string;
-  service: string;
-  status: number;
-  paths: string;
-  data: ModalData;
-};
+export type { Request };
 
 export const useRequestsHistory = () => {
   const [requests, setRequests] = useState<Request[]>([]);
@@ -23,36 +15,30 @@ export const useRequestsHistory = () => {
       console.log(e);
     }
   };
-  const fetchRequests = () => {
+  const reload = () => {
     try {
       chrome.runtime.sendMessage({ msg: 'get-requests' }, (response) => {
-        const reqs = requestHistory(response);
-        setRequests(reqs);
+        if (chrome.runtime.lastError) return;
+        setRequests(requestHistory(response));
       });
     } catch (e) {
       console.log(e);
     }
   };
-  const reload = () => {
-    fetchRequests();
-  };
 
   useEffect(() => {
     const handleMessage = ({ msg, data }: Message) => {
-      if (msg !== 'request-finished') return true;
-
-      const reqs = requestHistory(data);
-      setRequests(reqs);
-      return true;
+      if (msg !== 'request-finished') return;
+      setRequests(requestHistory(data));
     };
 
     chrome.runtime.onMessage.addListener(handleMessage);
-    fetchRequests();
+    reload();
 
     return () => {
       chrome.runtime.onMessage.removeListener(handleMessage);
     };
-  }, [fetchRequests]);
+  }, []);
 
   return { requests, reset, reload };
 };

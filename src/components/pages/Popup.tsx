@@ -1,72 +1,74 @@
 import { useState } from 'react';
-import clsx from 'clsx';
 import { useRequestsHistory } from '@/hooks/useRequestsHistory';
-import { Modal } from '@/components/Modal';
 import { Button } from '@/components/Button';
-import type { Request, ModalData } from '@/hooks/useRequestsHistory';
+import { SummaryBar } from '@/components/SummaryBar';
+import { Tabs } from '@/components/Tabs';
+import type { TabKey } from '@/components/Tabs';
+import { FilterInput } from '@/components/FilterInput';
+import { TimelineView } from '@/components/TimelineView';
+import { GroupedView } from '@/components/GroupedView';
+import { aggregateByPath } from '@/utils/aggregateByPath';
+import { toggleInSet } from '@/utils/toggleInSet';
 
-const RequestRow = ({ request, onDataClick }: { request: Request; onDataClick: (data: ModalData) => void }) => {
-  const handleClick = () => {
-    if (request.data) {
-      onDataClick(request.data);
-    }
-  };
-
-  return (
-    <tr>
-      <th>{request.requestedAt}</th>
-      <th>{request.method}</th>
-      <th>{request.service}</th>
-      <th className={clsx('text-left overflow-auto max-w-md', request.data && 'cursor-pointer')}>
-        <div onClick={handleClick}>{request.paths}</div>
-      </th>
-      <th>{request.status}</th>
-    </tr>
-  );
-};
+const TAB_ITEMS: { key: TabKey; label: string }[] = [
+  { key: 'timeline', label: 'Timeline' },
+  { key: 'grouped', label: 'Grouped' },
+];
 
 const Popup = () => {
-  const [showsModal, setShowsModal] = useState(false);
-  const [modalData, setModalData] = useState<ModalData>(null);
-  const { requests, reset, reload } = useRequestsHistory();
-  const requestCount = (requests || []).length;
-  const count = requestCount < 100 ? requestCount.toString() : ':D';
-  const handleDataClick = (data: ModalData) => {
-    setModalData(data);
-    setShowsModal(true);
+  const { requests, reset: resetRequests, reload } = useRequestsHistory();
+  const [activeTab, setActiveTab] = useState<TabKey>('timeline');
+  const [filter, setFilter] = useState('');
+  const [expandedRequestIds, setExpandedRequestIds] = useState<Set<string>>(new Set());
+  const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
+
+  const reset = () => {
+    setExpandedRequestIds(new Set());
+    setExpandedPaths(new Set());
+    resetRequests();
   };
-  const handleCloseModal = () => {
-    setShowsModal(false);
-  };
+  const toggleRequest = (id: string) => setExpandedRequestIds((prev) => toggleInSet(prev, id));
+  const togglePath = (path: string) => setExpandedPaths((prev) => toggleInSet(prev, path));
+
+  const needle = filter.trim().toLowerCase();
+  const filteredRequests = needle
+    ? requests.filter((r) => r.paths.toLowerCase().includes(needle))
+    : requests;
 
   return (
-    <div className='container relative p-2'>
-      <div className='flex mb-1'>
-        <div className='flex-1 text-lg'>Firestore access count: {count}</div>
-        <div>
-          <Button onClick={reload} className='mr-1'>
-            Reload
-          </Button>
+    <div className='h-full p-3 flex flex-col gap-3 text-gray-900 dark:text-gray-100'>
+      <div className='flex items-center justify-between gap-2'>
+        <div className='text-base font-semibold'>Firebase access viewer</div>
+        <div className='flex gap-1'>
+          <Button onClick={reload}>Reload</Button>
           <Button onClick={reset}>Clear</Button>
         </div>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th>time</th>
-            <th>method</th>
-            <th>service</th>
-            <th className='min-w-[400px]'>collection or document paths</th>
-            <th>status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {requests?.map((request, index) => (
-            <RequestRow key={index} request={request} onDataClick={handleDataClick} />
-          ))}
-        </tbody>
-      </table>
-      {showsModal && <Modal title='Query details' body={modalData} show={showsModal} onClickClose={handleCloseModal} />}
+
+      <SummaryBar requests={requests} />
+
+      <FilterInput value={filter} onChange={setFilter} />
+
+      <div className='flex-1 min-h-0 flex flex-col'>
+        <Tabs items={TAB_ITEMS} active={activeTab} onChange={setActiveTab} />
+        <div className='flex-1 min-h-0 overflow-auto rounded-b border border-t-0 border-gray-200 dark:border-gray-700'>
+          {activeTab === 'timeline' ? (
+            <TimelineView
+              requests={filteredRequests}
+              expandedIds={expandedRequestIds}
+              onToggle={toggleRequest}
+            />
+          ) : (
+            <GroupedView
+              groups={aggregateByPath(filteredRequests)}
+              expandedPaths={expandedPaths}
+              onTogglePath={togglePath}
+              expandedRequestIds={expandedRequestIds}
+              onToggleRequest={toggleRequest}
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 };
