@@ -13,7 +13,8 @@
   "dependencies": {
     "clsx": "^2.1.1",
     "react": "^19.2.5",
-    "react-dom": "^19.2.5"
+    "react-dom": "^19.2.5",
+    "react-json-view-lite": "^2.5.0"
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.4.0",
