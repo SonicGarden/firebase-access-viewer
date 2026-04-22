@@ -87,3 +87,44 @@ describe('requestHistory', () => {
   });
 });
 ```
+
+### TDD適用対象は純粋ロジック
+**Good:**
+```ts
+// 1. まず tests を書いて red を確認（まだ splitPathSegments は未実装）
+// src/utils/__tests__/pathSegments.test.ts
+describe('splitPathSegments', () => {
+  it('空文字の場合は空配列を返す', () => {
+    expect(splitPathSegments('')).toEqual([]);
+  });
+  it('collection/id の2セグメントはスラッシュを挟んで返す', () => {
+    expect(splitPathSegments('users/abc')).toEqual([
+      { role: 'collection', text: 'users' },
+      { role: 'slash', text: '/' },
+      { role: 'id', text: 'abc' },
+    ]);
+  });
+  // ...
+});
+
+// 2. 実装で green
+// src/utils/pathSegments.ts
+export const splitPathSegments = (path: string): PathSegment[] => {
+  if (!path) return [];
+  return path.split('/').flatMap<PathSegment>((text, index) =>
+    index === 0
+      ? [namedSegment(text, index)]
+      : [{ role: 'slash', text: '/' }, namedSegment(text, index)]
+  );
+};
+```
+**Bad:**
+```tsx
+// ビジュアル調整（CSSトークン差替え・JSXレイアウト変更）にユニットテストを要求する
+// → 視覚回帰はsnapshotでも拾いづらく、テストのメンテナンスコストに見合わない
+test('RequestRowはbg-[var(--bg-expanded)]をクラスに含む', () => {
+  // ... ← こういうスタイル表層のassertionは書かない
+});
+```
+- `custom_instructions: "Always use TDD"` は `src/utils/**` の純粋ロジックに適用（`pathSegments`, `requestHistory`, `toggleInSet` 等）
+- コンポーネントのビジュアルは `design_handoff_*/` のリファレンスと手動確認で担保（ユニットテスト対象外）

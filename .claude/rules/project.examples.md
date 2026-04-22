@@ -253,3 +253,95 @@ git commit -m "pnpmのminimumReleaseAgeを7日に設定（セキュリティ対�
 git add docs/dependency-update-2026-04-20.md package.json pnpm-lock.yaml
 git commit -m "依存更新"
 ```
+
+### `design_handoff_*/` ディレクトリはデザインハンドオフ専用の読み取り専用リファレンス
+**Good:**
+```
+# design_handoff_popup_redesign/ は React に書き換える際の参照専用
+# - 内部の HTML/CSS は そのまま動かさず、Reactコンポーネント + Tailwind + popup.css に翻訳
+# - rules-review 等の静的チェックでは対象外として扱う
+design_handoff_popup_redesign/README.md               # デザイン指示書
+design_handoff_popup_redesign/Firebase Access Viewer - Redesign.html  # HTMLモックアップ（編集不可）
+design_handoff_popup_redesign/screens/*.png           # 参照スクリーンショット
+```
+**Bad:**
+```tsx
+// src/ 配下に design_handoff の素のHTMLパターンを持ち込む
+// （例: data-theme 属性による切替、Tailwind非互換の素 <style>, CDN <script>）
+<div data-theme='dark' style={/* インラインCSS大量 */}>
+  {/* popup.css の OKLCH トークンと Tailwind arbitrary 値で置き換えるべき */}
+</div>
+```
+
+### ビジュアルCSSはOKLCHカラートークン層＋Tailwind arbitrary値の2層構成
+**Good:**
+```css
+/* src/styles/popup.css — トークン層 */
+:root {
+  --bg: oklch(99% 0.003 90);
+  --fg: oklch(22% 0.02 260);
+  --line-soft: oklch(94.5% 0.006 260);
+  --accent: oklch(68% 0.16 55);
+  --ok: oklch(60% 0.13 150);
+  --err: oklch(58% 0.18 25);
+  /* ... */
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: oklch(16% 0.012 260);
+    --fg: oklch(94% 0.01 260);
+    /* ... */
+  }
+}
+```
+```tsx
+// コンポーネント側 — Tailwind arbitrary 値で参照
+<div className='bg-[var(--bg)] text-[var(--fg)] border-b border-[var(--line-soft)]'>
+  <span className={clsx(errorCount > 0 ? 'text-[var(--err-fg)]' : 'text-[var(--fg)]')}>
+```
+**Bad:**
+```tsx
+// カラー値を直書き（light/dark で分岐が必要になる、トークン名がない）
+<div className='bg-[#fafafa] text-[#333] dark:bg-[#1a1a1a] dark:text-[#eee]'>
+
+// Tailwindの `bg-orange-500` 等のパレットを使う（OKLCHトークンと色系統が揃わない）
+<span className='bg-orange-500 text-white'>
+```
+
+### アイコンはインラインSVGで自前定義（`lucide-react`等を追加しない）
+**Good:**
+```tsx
+// src/components/Icons.tsx — base propsを共有してSVGを列挙
+import type { SVGProps } from 'react';
+
+const base: SVGProps<SVGSVGElement> = {
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 2,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+};
+
+export const SearchIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg {...base} {...props}>
+    <circle cx='11' cy='11' r='7' />
+    <path d='m20 20-3.5-3.5' />
+  </svg>
+);
+export const XIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg {...base} strokeWidth={2.2} {...props}>
+    <path d='M6 6l12 12M18 6L6 18' />
+  </svg>
+);
+// 利用側: currentColor と Tailwind arbitrary 値で色を統一
+<SearchIcon className='w-[13px] h-[13px] text-[var(--fg-faint)]' />
+```
+**Bad:**
+```ts
+// package.json に lucide-react 等のアイコンパッケージを追加
+// - minimumReleaseAge 待ちで導入遅延
+// - バンドルサイズ増（使うアイコンが数個でも依存本体を取り込む）
+// - 色指定APIがライブラリ依存になる
+import { Search, X } from 'lucide-react';
+```

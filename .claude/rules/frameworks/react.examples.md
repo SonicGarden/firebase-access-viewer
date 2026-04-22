@@ -237,26 +237,44 @@ export const ExpandableRow = ({ expanded, onToggle, header, body, disabled, head
 ### `JsonView`
 ```tsx
 // src/components/JsonView.tsx
-import { JsonView as LiteJsonView, defaultStyles, darkStyles } from 'react-json-view-lite';
+import {
+  JsonView as LiteJsonView,
+  defaultStyles,
+  darkStyles,
+  allExpanded, // ← library export (module-level constant)
+} from 'react-json-view-lite';
 import 'react-json-view-lite/dist/index.css'; // ← 必須
 import { usePrefersDark } from '@/hooks/usePrefersDark';
 
-// モジュールトップレベルで定義 → 再レンダリングで参照が変わらない
-const expandTopLevel = (level: number) => level < 1;
+// syntax色のオーバーライドは base style の classNameに独自クラスを連結する
+const withSyntaxColors = (base: typeof defaultStyles) => ({
+  ...base,
+  label: `${base.label} json-k`,
+  stringValue: `${base.stringValue} json-s`,
+  numberValue: `${base.numberValue} json-n`,
+  booleanValue: `${base.booleanValue} json-b`,
+  nullValue: `${base.nullValue} json-b`,
+  undefinedValue: `${base.undefinedValue} json-b`,
+  otherValue: `${base.otherValue} json-b`,
+  punctuation: `${base.punctuation} json-p`,
+});
+const lightStyles = withSyntaxColors(defaultStyles);
+const darkStylesTokens = withSyntaxColors(darkStyles);
 
 export const JsonView = ({ data }: { data: unknown }) => {
   const isDark = usePrefersDark();
   return (
     <LiteJsonView
       data={data as object}
-      style={isDark ? darkStyles : defaultStyles}
-      shouldExpandNode={expandTopLevel}
+      style={isDark ? darkStylesTokens : lightStyles}
+      shouldExpandNode={allExpanded} // 全展開を要求する場合はlibrary export定数を使う
     />
   );
 };
 ```
 - CSS を import しないと崩れる（README 指定）
-- `shouldExpandNode` をコンポーネント内で `(level) => level < 1` と書くと毎レンダで新しい参照になりライブラリ側の再展開挙動に影響し得る
+- `shouldExpandNode` は目的に応じてlibrary exportの定数を使う: `allExpanded`（全展開） / `collapseAllNested`（トップレベルのみ展開）。自前で `(level) => level < 1` などを書くと毎レンダで新しい参照になる
+- syntax色の上書きはstyle propの各キー（`stringValue`/`numberValue`/`punctuation`等）に `popup.css` で定義した`.json-s` / `.json-n` / `.json-p`等を連結し、色は OKLCHトークン（`var(--json-string)`等）側で管理する
 - dark切替は `prefers-color-scheme` media query 経由（Tailwind の `darkMode: 'media'` と揃える）
 
 ### 展開state分離: `expandedRequestIds` / `expandedPaths`
@@ -303,3 +321,99 @@ export default defineConfig({
 - `react()` と `babel()` は独立したプラグインとして `plugins` 配列に並べる
 - React 19 では `react-compiler-runtime` が組込まれるため追加の依存は不要（React 17/18 を対象にする場合のみ `reactCompilerPreset({ target: '17' })` 等を指定）
 - `devDependencies` に `babel-plugin-react-compiler` / `@rolldown/plugin-babel` を追加（`@rolldown/plugin-babel` は `@vitejs/plugin-react@6.x` の peer dependency 扱い）
+
+### `ExpandableRow`の`headerGridTemplate` / `rowHeight`はrequired
+```tsx
+// src/components/ExpandableRow.tsx
+type ExpandableRowProps = {
+  expanded: boolean;
+  onToggle: () => void;
+  header: ReactNode;
+  body?: ReactNode;
+  disabled?: boolean;
+  headerClassName?: string;
+  headerGridTemplate: string; // ← optional + flex fallback にしない
+  rowHeight: number;          // ← 両callerとも固定高さを渡す
+};
+
+// 両callerが常に明示的に渡している（dead-codeのfallback不要）
+// RequestRow: GRID_TEMPLATE = '68px 44px 84px 1fr auto 14px' / rowHeight={30}
+// GroupRow:   別のgrid template / rowHeight は group行固有
+```
+- 「optional + fallback」にしない理由: 使われない分岐は保守時に実装意図を曖昧にし、外部仕様として後方互換を保つ必要が生まれる。callerが全部埋めているならrequiredのほうが明快
+
+### `CopyJsonButton` - `setTimeout` cleanup パターン
+```tsx
+const COPY_FEEDBACK_MS = 1200;
+
+const CopyJsonButton = ({ data }: { data: unknown }) => {
+  const [copied, setCopied] = useState(false);
+  // ブラウザ/Node 両対応の番号型
+  const timerRef = useRef<ReturnType<typeof window.setTimeout> | undefined>(undefined);
+
+  // unmount時に pending timer をキャンセル（setState警告防止）
+  useEffect(() => () => clearTimeout(timerRef.current), []);
+
+  const handleCopy = async (e: MouseEvent) => {
+    e.stopPropagation(); // 親のtoggleを奪わない
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+      setCopied(true);
+      clearTimeout(timerRef.current); // 再クリック時の旧タイマーを破棄
+      timerRef.current = window.setTimeout(() => setCopied(false), COPY_FEEDBACK_MS);
+    } catch (err) {
+      console.warn('[firebase-access-viewer] copy failed', err);
+    }
+  };
+  // ...
+};
+```
+
+### `/` ショートカットと`Esc`クリア
+```tsx
+// src/components/pages/Popup.tsx — `/`で filter focus
+const isTypingTarget = (el: EventTarget | null) => {
+  if (!(el instanceof HTMLElement)) return false;
+  const tag = el.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+  return el.isContentEditable;
+};
+
+useEffect(() => {
+  const onKeyDown = (e: KeyboardEvent) => {
+    if (e.key !== '/') return;
+    if (isTypingTarget(document.activeElement)) return; // 入力中は素通し
+    e.preventDefault();
+    filterRef.current?.focus();
+  };
+  window.addEventListener('keydown', onKeyDown);
+  return () => window.removeEventListener('keydown', onKeyDown);
+}, []);
+
+// src/components/FilterInput.tsx — Escで値クリア + blur
+onKeyDown={(e) => {
+  if (e.key === 'Escape') {
+    onChange('');
+    e.currentTarget.blur();
+  }
+}}
+```
+
+### `manifestVersion` は module-scope IIFEでfreeze
+```tsx
+// src/components/pages/Popup.tsx
+const MANIFEST_VERSION = (() => {
+  try {
+    return chrome?.runtime?.getManifest?.().version ?? '1.1.0';
+  } catch {
+    return '1.1.0';
+  }
+})();
+
+const Popup = () => {
+  // ... 毎レンダで chrome.runtime.getManifest() を呼ばない
+  return <footer>... v{MANIFEST_VERSION}</footer>;
+};
+```
+- extension外の単体プレビュー（`chrome`が未定義）でも壊れない（optional chaining + try/catch）
+- module scope で一度だけ評価 → 描画のたびに IPC 相当のAPIを叩かない

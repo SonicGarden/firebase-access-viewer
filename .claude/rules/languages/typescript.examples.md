@@ -245,3 +245,40 @@ const pathFromParsedQuery = (parsedValue: unknown): string | undefined => {
 ```
 - 外部由来の `unknown` を深くnarrowする際、各段で `typeof` ガードし、全体を try/catch で囲む
 - 未知の形状・プリミティブ・null いずれが来ても throw せず `undefined` を返す best-effort 方針
+
+### `splitPathSegments(path: string): PathSegment[]`
+```ts
+// src/utils/pathSegments.ts
+export type PathSegment =
+  | { role: 'collection'; text: string }
+  | { role: 'id'; text: string }
+  | { role: 'slash'; text: '/' };
+
+const namedSegment = (text: string, index: number): PathSegment => ({
+  role: index % 2 === 0 ? 'collection' : 'id',
+  text,
+});
+
+export const splitPathSegments = (path: string): PathSegment[] => {
+  if (!path) return [];
+  return path
+    .split('/')
+    .flatMap<PathSegment>((text, index) =>
+      index === 0
+        ? [namedSegment(text, index)]
+        : [{ role: 'slash', text: '/' }, namedSegment(text, index)]
+    );
+};
+
+// 利用側（PathPretty.tsx）: role で色クラスを出し分け
+const SEG_CLASS = {
+  collection: 'text-[var(--fg)]',
+  id: 'text-[var(--fg-muted)]',
+  slash: 'text-[var(--fg-dim)] px-px',
+} as const;
+{splitPathSegments(path).map((segment, i) => (
+  <span key={i} className={SEG_CLASS[segment.role]}>{segment.text}</span>
+))}
+```
+- `role: 'slash'` を明示的に要素化する → JSX間のwhitespace折り畳み・コピー時の`/`欠落を避けられる
+- `'collection' | 'id' | 'slash'` のdiscriminated unionにしているため `SEG_CLASS[segment.role]` のキー必須性がコンパイルで保証される

@@ -15,6 +15,7 @@ paths:
 - `toggleInSet<T>(set: Set<T>, value: T): Set<T>` - 新しい`Set`を返すimmutableトグル（`React.useState<Set<T>>`向け）
 - `Request.id` 採番ロジック - `[...data].reverse()` → 同`startedDateTime`連番マップで採番 → `.reverse()`で復帰（新着先頭追加でも既存idがshiftしない）
 - `pathFromParsedQuery(parsedValue)` - 未知形状の`unknown`を`typeof === 'string'`ガードで段階的にnarrowしつつ外側をtry/catchで囲む防御的パーサ
+- `splitPathSegments(path: string): PathSegment[]` - `collection/id/collection/...`形式のパスを `{ role: 'collection' | 'id' | 'slash'; text: string }[]` に分割（`role: 'collection' | 'id' | 'slash'`のdiscriminated union、区切り`/`も明示的に要素化してレンダリング時のwhitespace崩れを避ける）
 
 ## Examples
 When in doubt: ./typescript.examples.md
