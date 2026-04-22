@@ -1,4 +1,5 @@
 import { RequestRow } from '@/components/RequestRow';
+import { EmptyState } from '@/components/EmptyState';
 import type { Request } from '@/utils/requestHistory';
 
 type TimelineViewProps = {
@@ -10,13 +11,14 @@ type TimelineViewProps = {
 export const TimelineView = ({ requests, expandedIds, onToggle }: TimelineViewProps) => {
   if (requests.length === 0) {
     return (
-      <div className='px-3 py-6 text-center text-sm text-gray-500 dark:text-gray-400'>
-        No matching requests.
-      </div>
+      <EmptyState
+        title='No matching requests'
+        subtitle='Try clearing the filter, or interact with the page to capture new Firestore / Storage traffic.'
+      />
     );
   }
   return (
-    <div className='divide-y divide-transparent'>
+    <div>
       {requests.map((request) => (
         <RequestRow
           key={request.id}
