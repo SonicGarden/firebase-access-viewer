@@ -1,22 +1,23 @@
-import { useState, useMemo, useCallback, memo } from 'react';
+import { useState, useCallback, memo } from 'react';
+import clsx from 'clsx';
 import { useRequestsHistory } from '@/hooks/useRequestsHistory';
 import { Modal } from '@/components/Modal';
 import { Button } from '@/components/Button';
 import type { Request, ModalData } from '@/hooks/useRequestsHistory';
 
 const RequestRow = memo(({ request, onDataClick }: { request: Request; onDataClick: (data: ModalData) => void }) => {
-  const handleClick = useCallback(() => {
+  const handleClick = () => {
     if (request.data) {
       onDataClick(request.data);
     }
-  }, [request.data, onDataClick]);
+  };
 
   return (
     <tr>
       <th>{request.requestedAt}</th>
       <th>{request.method}</th>
       <th>{request.service}</th>
-      <th className={`text-left overflow-auto max-w-md ${request.data ? 'cursor-pointer' : ''}`}>
+      <th className={clsx('text-left overflow-auto max-w-md', request.data && 'cursor-pointer')}>
         <div onClick={handleClick}>{request.paths}</div>
       </th>
       <th>{request.status}</th>
@@ -28,20 +29,20 @@ const Popup = () => {
   const [showsModal, setShowsModal] = useState(false);
   const [modalData, setModalData] = useState<ModalData>(null);
   const { requests, reset, reload } = useRequestsHistory();
-  const requestCount = useMemo(() => (requests || []).length, [requests]);
-  const count = useMemo(() => (requestCount < 100 ? requestCount.toString() : ':D'), [requestCount]);
+  const requestCount = (requests || []).length;
+  const count = requestCount < 100 ? requestCount.toString() : ':D';
   const handleDataClick = useCallback((data: ModalData) => {
     setModalData(data);
     setShowsModal(true);
   }, []);
-  const handleCloseModal = useCallback(() => {
+  const handleCloseModal = () => {
     setShowsModal(false);
-  }, []);
+  };
 
   return (
     <div className='container relative p-2'>
       <div className='flex mb-1'>
-        <div className='flex-1 text-lg'>{`Firestore access count: ${count}`}</div>
+        <div className='flex-1 text-lg'>Firestore access count: {count}</div>
         <div>
           <Button onClick={reload} className='mr-1'>
             Reload

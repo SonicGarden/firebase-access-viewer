@@ -1,0 +1,14 @@
+{
+  "enabledPlugins": {
+    "dev-workflow-bundle@hiropon-plugins": true
+  },
+  "extraKnownMarketplaces": {
+    "hiropon-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "hiroro-work/claude-plugins"
+      }
+    }
+  },
+  "plansDirectory": ".claude/plans"
+}

@@ -1,7 +1,5 @@
 import type { MessageHandler } from '@/types';
-
-const isSuccessfulRequest = ({ response: { status } }: { response: { status: number } }) =>
-  Math.floor(status / 100) === 2;
+import { isSuccessfulRequest } from '@/utils';
 
 const sleep = async (msec: number) => new Promise((resolve) => setTimeout(resolve, msec));
 

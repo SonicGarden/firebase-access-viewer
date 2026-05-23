@@ -1,8 +1,7 @@
-import { memo } from 'react';
 import { Button } from '@/components/Button';
 import type { ReactNode } from 'react';
 
-export const Modal = memo(({
+export const Modal = ({
   title,
   body,
   show,
@@ -22,4 +21,4 @@ export const Modal = memo(({
       </div>
     </div>
   ) : null;
-});
+};
