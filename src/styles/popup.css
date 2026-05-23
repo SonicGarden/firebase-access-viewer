@@ -1,17 +1,195 @@
+:root {
+  --bg: oklch(99% 0.003 90);
+  --bg-elev: oklch(98% 0.004 90);
+  --bg-subtle: oklch(96.5% 0.006 90);
+  --bg-hover: oklch(96% 0.008 260);
+  --bg-expanded: oklch(97.5% 0.008 60);
+
+  --line: oklch(92% 0.008 260);
+  --line-soft: oklch(94.5% 0.006 260);
+  --line-strong: oklch(86% 0.01 260);
+
+  --fg: oklch(22% 0.02 260);
+  --fg-muted: oklch(48% 0.015 260);
+  --fg-faint: oklch(62% 0.012 260);
+  --fg-dim: oklch(74% 0.008 260);
+
+  --accent: oklch(68% 0.16 55);
+  --accent-weak: oklch(95% 0.04 60);
+  --accent-fg: oklch(40% 0.12 45);
+
+  --ok: oklch(60% 0.13 150);
+  --ok-bg: oklch(95% 0.04 150);
+  --ok-fg: oklch(38% 0.1 150);
+
+  --warn: oklch(72% 0.14 80);
+  --warn-bg: oklch(96% 0.05 80);
+  --warn-fg: oklch(42% 0.12 70);
+
+  --err: oklch(58% 0.18 25);
+  --err-bg: oklch(95% 0.04 25);
+  --err-fg: oklch(42% 0.15 25);
+
+  --svc-firestore: oklch(68% 0.14 55);
+  --svc-firestore-bg: oklch(96% 0.035 60);
+  --svc-firestore-fg: oklch(40% 0.11 50);
+
+  --svc-storage: oklch(62% 0.12 230);
+  --svc-storage-bg: oklch(96% 0.03 230);
+  --svc-storage-fg: oklch(38% 0.1 235);
+
+  --focus-ring: oklch(72% 0.14 55 / 0.35);
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+    'Oxygen', 'Ubuntu', 'Cantarell', 'Helvetica Neue', sans-serif;
+  --font-mono: 'JetBrains Mono', source-code-pro, Menlo, Monaco, Consolas,
+    'Courier New', monospace;
+
+  --json-key: oklch(45% 0.1 280);
+  --json-string: oklch(45% 0.12 150);
+  --json-number: oklch(52% 0.13 30);
+  --json-boolean: oklch(50% 0.14 280);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: oklch(16% 0.012 260);
+    --bg-elev: oklch(19% 0.013 260);
+    --bg-subtle: oklch(21% 0.014 260);
+    --bg-hover: oklch(24% 0.015 260);
+    --bg-expanded: oklch(22% 0.018 50);
+
+    --line: oklch(26% 0.014 260);
+    --line-soft: oklch(23% 0.013 260);
+    --line-strong: oklch(32% 0.016 260);
+
+    --fg: oklch(94% 0.01 260);
+    --fg-muted: oklch(70% 0.012 260);
+    --fg-faint: oklch(58% 0.012 260);
+    --fg-dim: oklch(44% 0.012 260);
+
+    --accent: oklch(76% 0.16 60);
+    --accent-weak: oklch(28% 0.06 55);
+    --accent-fg: oklch(84% 0.12 60);
+
+    --ok-bg: oklch(26% 0.05 150);
+    --ok-fg: oklch(82% 0.12 150);
+
+    --warn-bg: oklch(28% 0.06 75);
+    --warn-fg: oklch(86% 0.13 80);
+
+    --err-bg: oklch(28% 0.08 25);
+    --err-fg: oklch(82% 0.14 25);
+
+    --svc-firestore-bg: oklch(26% 0.05 55);
+    --svc-firestore-fg: oklch(84% 0.12 60);
+
+    --svc-storage-bg: oklch(25% 0.04 235);
+    --svc-storage-fg: oklch(80% 0.11 230);
+
+    --focus-ring: oklch(76% 0.16 60 / 0.4);
+
+    --json-key: oklch(76% 0.12 280);
+    --json-string: oklch(78% 0.15 150);
+    --json-number: oklch(78% 0.15 30);
+    --json-boolean: oklch(78% 0.16 280);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 600px;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  width: 720px;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  font-feature-settings: 'cv11', 'ss01', 'ss03';
+  font-size: 13px;
+  line-height: 1.4;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg);
+  color: var(--fg);
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+code,
+.font-mono {
+  font-family: var(--font-mono);
 }
 
-table, td, th {
-  border: 1px black solid;
+/* Ratio bar under the summary strip */
+.ratio {
+  display: flex;
+  height: 3px;
+  background: var(--line-soft);
+  overflow: hidden;
+}
+.ratio > span {
+  display: block;
+  height: 100%;
+}
+
+/* N+1 row wash (gradient that needs hover — can't be inline style) */
+.n1-wash {
+  background: linear-gradient(90deg, var(--warn-bg) 0%, transparent 60%);
+}
+.n1-wash:hover {
+  background: linear-gradient(90deg, var(--warn-bg) 0%, var(--bg-hover) 60%);
+}
+
+/* Grouped child indent — targets RequestRow rendered inside .group-children */
+.group-children [data-row='request'] {
+  padding-left: 28px;
+}
+
+/* Footer "Listening" dot pulse */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 oklch(60% 0.13 150 / 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px oklch(60% 0.13 150 / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 oklch(60% 0.13 150 / 0);
+  }
+}
+
+/* react-json-view-lite syntax color overrides (consumed via style prop) */
+.json-k {
+  color: var(--json-key);
+}
+.json-s {
+  color: var(--json-string);
+}
+.json-n {
+  color: var(--json-number);
+}
+.json-b {
+  color: var(--json-boolean);
+}
+.json-p {
+  color: var(--fg-muted);
+}
+
+/* Scrollbar styling (webkit-based — Chrome/Edge) */
+.fav-scroll::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.fav-scroll::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 999px;
+  border: 3px solid var(--bg);
+}
+.fav-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--line-strong);
 }

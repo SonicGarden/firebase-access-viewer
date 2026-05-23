@@ -6,7 +6,12 @@ let requests: {}[] = [];
 const handleRequestFinished = (request: chrome.devtools.network.Request) => {
   if (firebaseServices.some(({ match }) => match(request.request.url))) {
     requests = [request, ...requests.slice(0, 99)];
-    chrome.runtime.sendMessage({ msg: 'request-finished', data: requests });
+    try {
+      chrome.runtime.sendMessage({ msg: 'request-finished', data: requests });
+    } catch {
+      // Extension context invalidated (e.g., extension reloaded while DevTools open).
+      // Listener is still attached to the old context; ignore until DevTools is reopened.
+    }
   }
 };
 
