@@ -275,6 +275,10 @@ describe('requestHistory', () => {
     expect(requestHistory([])).toEqual([]);
   });
 
+  it.each([undefined, null, true, {}, 'x'])('配列以外の%sで空配列を返す', (data) => {
+    expect(requestHistory(data)).toEqual([]);
+  });
+
   describe('id採番', () => {
     it('異なるstartedDateTimeならsuffixなし', () => {
       const result = requestHistory([

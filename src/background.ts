@@ -19,7 +19,7 @@ let pending: { response: { status: number } }[] | null = null;
 const msgRequestFinishedHandler: MessageHandler = async ({ data: requests }) => {
   if (processing) {
     pending = requests;
-    return true;
+    return;
   }
   processing = true;
   try {
@@ -32,14 +32,13 @@ const msgRequestFinishedHandler: MessageHandler = async ({ data: requests }) => 
   } finally {
     processing = false;
   }
-  return true;
 };
 
-const handleMessage: MessageHandler = async (message, sender, sendResponse) => {
+const handleMessage: MessageHandler = (message, sender, sendResponse) => {
   const handler = {
     'request-finished': msgRequestFinishedHandler,
   }[message.msg as string];
-  return (await handler?.(message, sender, sendResponse)) || true;
+  handler?.(message, sender, sendResponse);
 };
 
 chrome.action.setBadgeText({ text: '' });
