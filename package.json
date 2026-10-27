@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "zip": "pnpm build && zip -r releases/firebase-access-viewer.zip dist",
+    "zip": "pnpm build && rm -f releases/firebase-access-viewer-$npm_package_version.zip && zip -r releases/firebase-access-viewer-$npm_package_version.zip dist -x '*.DS_Store'",
     "test": "vitest run",
     "test:watch": "vitest"
   },

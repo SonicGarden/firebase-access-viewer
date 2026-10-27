@@ -11,7 +11,7 @@ Firebase(Firestore/Storage)へのネットワークリクエストをChrome DevT
   - **devtools**: `src/devtools.ts` + `devtools.html` — `chrome.devtools.network.onRequestFinished`でリクエストを捕捉し、Firebaseサービス宛のものだけ保持（最新100件）
   - **popup**: `src/popup.tsx` + `popup.html` — React製のUIで履歴を表示
 - ビルドは`@crxjs/vite-plugin`でViteに`manifest.json`を読み込ませて生成
-- パッケージリリースは`pnpm zip`で`releases/firebase-access-viewer.zip`を作成
+- パッケージリリースは`pnpm zip`で`releases/firebase-access-viewer-<version>.zip`を作成（`package.json`の`version`を付与。同名zipは作り直す）
 - Node版は`.node-version`で固定（プロジェクト標準）
 - パッケージマネージャはpnpm v10（`package.json`の`packageManager`フィールドで版数pin、`yarn`/`npm`は使わない）
 - pnpm v10はpostinstallスクリプトがデフォルト無効のため、必要な依存は`pnpm.onlyBuiltDependencies`に列挙して許可（例: `esbuild`）
