@@ -15,21 +15,21 @@ const handleRequestFinished = (request: chrome.devtools.network.Request) => {
   }
 };
 
-const msgGetRequestsHandler: MessageHandler = async (message, sender, sendResponse) => {
+const msgGetRequestsHandler: MessageHandler = (message, sender, sendResponse) => {
   sendResponse(requests);
-  return true;
 };
 
-const msgClearRequestsHandler: MessageHandler = async () => {
+const msgClearRequestsHandler: MessageHandler = () => {
   requests = [];
-  return true;
 };
 
 chrome.devtools.network.onRequestFinished.addListener(handleRequestFinished);
-chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+const handleMessage: MessageHandler = (message, sender, sendResponse) => {
   const handler = {
     'get-requests': msgGetRequestsHandler,
     'clear-requests': msgClearRequestsHandler,
   }[message.msg as string];
-  return (await handler?.(message, sender, sendResponse)) || true;
-});
+  handler?.(message, sender, sendResponse);
+};
+
+chrome.runtime.onMessage.addListener(handleMessage);

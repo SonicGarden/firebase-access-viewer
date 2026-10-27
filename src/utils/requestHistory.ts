@@ -108,8 +108,9 @@ const transformEntry = (entry: RawEntry, id: string): Request => {
   };
 };
 
-export const requestHistory = (data: RawEntry[]) => {
-  const list = data || [];
+export const requestHistory = (data: unknown) => {
+  // メッセージ応答は外部由来なので、配列以外（DevTools 未起動時の応答など）は空扱いにする
+  const list: RawEntry[] = Array.isArray(data) ? data : [];
   const counters = new Map<string, number>();
   const oldestFirst = [...list].reverse();
   const withIdsOldestFirst = oldestFirst.map((entry) => {

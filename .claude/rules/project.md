@@ -24,6 +24,7 @@ Firebase(Firestore/Storage)へのネットワークリクエストをChrome DevT
 
 - コンテキスト間通信は`chrome.runtime.sendMessage({ msg, data })`形式に統一（`msg`は文字列リテラル、`data`は任意）
 - メッセージディスパッチはオブジェクトマップで実装（`switch`/`if-else`を使わない、ハンドラを`msg`名でルックアップ）
+- `chrome.runtime.onMessage` のリスナーは同期関数にし、値を返さない（Chrome 148 以降は Promise の解決値が応答として送られる。応答は `sendResponse` を同期で呼ぶ）
 - Firebaseサービスの判定は`firebaseServices`配列の`match(url)`経由（URL文字列処理を呼び出し側に書かない）
 - Firebaseサービス名のunion型は`firebaseServices` (`as const`)から派生させる（`FirebaseServiceName = (typeof firebaseServices)[number]['name']`、stringly-typedを避け、サービス追加時に`Record`や`switch`が自動追従）
 - リクエスト履歴は配列の先頭追加＋`slice(0, 99)`で最大100件に制限（mutableなpushは使わない）

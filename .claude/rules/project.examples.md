@@ -18,21 +18,38 @@ chrome.runtime.sendMessage(['request-finished', requests]);
 ### メッセージディスパッチはオブジェクトマップ
 **Good:**
 ```ts
-const handleMessage: MessageHandler = async (message, sender, sendResponse) => {
+const handleMessage: MessageHandler = (message, sender, sendResponse) => {
   const handler = {
     'request-finished': msgRequestFinishedHandler,
   }[message.msg as string];
-  return await handler?.(message, sender, sendResponse) || true;
+  handler?.(message, sender, sendResponse);
 };
 ```
 **Bad:**
 ```ts
-const handleMessage: MessageHandler = async (message, sender, sendResponse) => {
+const handleMessage: MessageHandler = (message, sender, sendResponse) => {
   if (message.msg === 'request-finished') {
-    return msgRequestFinishedHandler(message, sender, sendResponse);
+    msgRequestFinishedHandler(message, sender, sendResponse);
   }
-  return true;
 };
+```
+
+### `onMessage` リスナーは同期関数にし、値を返さない
+**Good:**
+```ts
+// 応答は sendResponse を同期で呼ぶ。重い処理はハンドラ内で async にしてよい（戻り値は捨てる）
+const msgGetRequestsHandler: MessageHandler = (message, sender, sendResponse) => {
+  sendResponse(requests);
+};
+chrome.runtime.onMessage.addListener(handleMessage);
+```
+**Bad:**
+```ts
+// Chrome 148 以降は Promise の解決値（true）が応答として送られ、
+// 本来の応答より先に popup へ届いて requestHistory(true) が落ちる
+chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+  return (await handler?.(message, sender, sendResponse)) || true;
+});
 ```
 
 ### Firebaseサービス名のunion型は`firebaseServices` (`as const`)から派生させる
