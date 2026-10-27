@@ -107,13 +107,13 @@ import { Request, ModalData } from '@/hooks/useRequestsHistory';
 import type { MessageHandler } from '@/types';
 
 const msgRequestFinishedHandler: MessageHandler = async ({ data: requests }) => {
-  // ... バッジ更新など
-  return true;
+  // ... バッジ更新など（ハンドラ内の async は可。戻り値はリスナーで捨てる）
 };
 
-const handleMessage: MessageHandler = async (message, sender, sendResponse) => {
+// リスナー本体は同期で値を返さない（Chrome 148 以降、Promise の解決値が応答になるため）
+const handleMessage: MessageHandler = (message, sender, sendResponse) => {
   const handler = { 'request-finished': msgRequestFinishedHandler }[message.msg as string];
-  return await handler?.(message, sender, sendResponse) || true;
+  handler?.(message, sender, sendResponse);
 };
 
 chrome.runtime.onMessage.addListener(handleMessage);
@@ -124,10 +124,8 @@ chrome.runtime.onMessage.addListener(handleMessage);
 import type { Message } from '@/types';
 
 const handleMessage = ({ msg, data }: Message) => {
-  if (msg !== 'request-finished') return true;
-  const reqs = requestHistory(data);
-  setRequests(reqs);
-  return true;
+  if (msg !== 'request-finished') return;
+  setRequests(requestHistory(data));
 };
 ```
 

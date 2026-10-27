@@ -7,7 +7,7 @@ paths:
 
 ## Project-specific patterns
 
-- `MessageHandler` - Chrome拡張メッセージ用の共通ハンドラ型（`Promise<boolean>`を返す）
+- `MessageHandler` - Chrome拡張メッセージ用の共通ハンドラ型（同期で`void`を返す。応答は`sendResponse`を同期で呼ぶ）
 - `Message = { msg: 'request-finished' | 'get-requests' | (string & {}); data?: any }` - 拡張間メッセージの共通型（`string & {}`で文字列リテラル補完を残す）
 - `FirestoreRequest` / `StorageRequest` - DevTools networkリクエストの解析対象型
 - `FirebaseServiceName = (typeof firebaseServices)[number]['name']` - `as const`配列から派生したservice名union型（stringly-typedを避ける）
