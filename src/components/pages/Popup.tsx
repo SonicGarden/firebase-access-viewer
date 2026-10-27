@@ -20,9 +20,9 @@ const isTypingTarget = (el: EventTarget | null) => {
 
 const MANIFEST_VERSION = (() => {
   try {
-    return chrome?.runtime?.getManifest?.().version ?? '1.2.0';
+    return chrome?.runtime?.getManifest?.().version ?? '1.2.1';
   } catch {
-    return '1.2.0';
+    return '1.2.1';
   }
 })();
 
